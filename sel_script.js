@@ -160,11 +160,18 @@ function displayItems(page) {
     const decodedTitle = document.createElement('textarea');
     decodedTitle.innerHTML = items[i].title;
     const decodedTitleText = decodedTitle.value;
+    const res = items[i].resNum;  // レス数取得
     const itemNumber = i + 1; // 番号を計算
+    const date = convertUnixTimeToRegularDate(items[i].datFileName.replace('.dat',''))
+
     datLink.textContent = `${itemNumber}. ${decodedTitleText}`; // 番号とタイトルを表示
     
     const datListItem = document.createElement('li');
-    datListItem.appendChild(datLink);
+    const datListData = document.createElement('div');
+    datListData.className = "datInfo";
+    datListData.textContent = `${res}レス ${date}`;
+
+    datListItem.appendChild(datLink).appendChild(datListData);
     datListDiv.appendChild(datListItem);
   }
   const itemCountElement = document.getElementById('itemCount');
@@ -172,6 +179,21 @@ function displayItems(page) {
     itemCountElement.textContent = `全${items.length}スレッド`;
   }
   updatePageButtons();
+}
+
+function convertUnixTimeToRegularDate(unixTime) {
+  const date = new Date(unixTime * 1000); // ミリ秒単位に変換
+
+  const year = date.getFullYear();
+  const month = ("0" + (date.getMonth() + 1)).slice(-2); // 0埋めした月
+  const day = ("0" + date.getDate()).slice(-2); // 0埋めした日
+
+  const hours = ("0" + date.getHours()).slice(-2); // 0埋めした時
+  const minutes = ("0" + date.getMinutes()).slice(-2); // 0埋めした分
+  const seconds = ("0" + date.getSeconds()).slice(-2); // 0埋めした秒
+
+  const formattedDate = `${year}/${month}/${day} ${hours}:${minutes}:${seconds}`;
+  return formattedDate;
 }
 
 if (!bbsName) {
@@ -195,7 +217,9 @@ if (!bbsName) {
 
       items = lines.map((line,index) => {
         const [datFileName, titleandNum] = line.split('<>');
-        const [title, resNum] = titleandNum.split(/(\s+\(\d+\))$/);
+        const res = titleandNum.match(/(\s+\((\d+))\)$/m);
+        const resNum = res[2];
+        const [title,] = titleandNum.split(/(\s+\(\d+\))$/m);
         return { datFileName, title,number: index + 1 ,resNum};
       });
 
